@@ -46,6 +46,15 @@ hr                                  { border-color: rgba(255,255,255,0.07) !impo
 [data-testid="stSelectbox"] svg            { fill:#c8f04a !important; }
 [data-testid="stSelectbox"] li             { background:#1e2024 !important; color:#f0eeea !important; }
 [data-testid="stSelectbox"] li:hover       { background:#2a2d32 !important; }
+/* Selectbox popup/listbox container */
+[data-baseweb="popover"]                    { background:#1e2024 !important; border:1px solid rgba(200,240,74,0.25) !important; border-radius:10px !important; }
+[data-baseweb="popover"] *                  { background:#1e2024 !important; color:#f0eeea !important; }
+[data-baseweb="popover"] li:hover           { background:#2a2d32 !important; }
+[data-baseweb="menu"]                       { background:#1e2024 !important; }
+[data-baseweb="menu"] ul                    { background:#1e2024 !important; }
+[role="listbox"]                            { background:#1e2024 !important; border:1px solid rgba(200,240,74,0.25) !important; border-radius:10px !important; }
+[role="option"]                             { background:#1e2024 !important; color:#f0eeea !important; }
+[role="option"]:hover                       { background:#2a2d32 !important; }
 
 [data-testid="stNumberInput"] > div        { background:#1e2024 !important; border:1px solid rgba(255,255,255,0.12) !important; border-radius:8px !important; }
 [data-testid="stNumberInput"] input        { background:#1e2024 !important; color:#c8f04a !important; font-family:'IBM Plex Mono',monospace !important; font-size:13px !important; border:none !important; }
@@ -54,8 +63,15 @@ hr                                  { border-color: rgba(255,255,255,0.07) !impo
 [data-testid="stNumberInput"] button svg   { fill:#f0eeea !important; }
 label[data-testid="stWidgetLabel"] p       { color:#7a7975 !important; font-size:12px !important; }
 
-[data-testid="stFileUploader"]             { background:#161719 !important; border:1.5px dashed rgba(200,240,74,0.25) !important; border-radius:10px !important; }
-[data-testid="stFileUploader"] *           { color:#f0eeea !important; }
+[data-testid="stFileUploader"]                          { background:#161719 !important; border:1.5px dashed rgba(200,240,74,0.25) !important; border-radius:10px !important; }
+[data-testid="stFileUploader"] *                        { color:#f0eeea !important; }
+[data-testid="stFileUploaderDropzone"]                  { background:#161719 !important; border:none !important; }
+[data-testid="stFileUploaderDropzoneInstructions"]      { background:#161719 !important; }
+[data-testid="stFileUploaderDropzoneInstructions"] *    { color:#7a7975 !important; }
+section[data-testid="stFileUploaderDropzone"]           { background:#161719 !important; }
+/* Browse files button inside uploader */
+[data-testid="stFileUploaderDropzone"] button           { background:#2a2d32 !important; color:#f0eeea !important; border:1px solid rgba(255,255,255,0.14) !important; border-radius:6px !important; }
+[data-testid="stFileUploaderDropzone"] button:hover     { border-color:rgba(200,240,74,0.4) !important; color:#c8f04a !important; }
 
 [data-testid="stExpander"]                 { background:#161719 !important; border:1px solid rgba(255,255,255,0.08) !important; border-radius:10px !important; }
 [data-testid="stExpander"] summary         { background:#1e2024 !important; border-radius:10px !important; padding:10px 16px !important; }
@@ -67,6 +83,12 @@ label[data-testid="stWidgetLabel"] p       { color:#7a7975 !important; font-size
 
 [data-testid="stAlert"]    { border-radius:8px !important; }
 iframe                     { color-scheme:dark; }
+
+/* Text inputs (free-form assumption fields) */
+[data-testid="stTextInput"] > div            { background:#1e2024 !important; border:1px solid rgba(255,255,255,0.12) !important; border-radius:8px !important; }
+[data-testid="stTextInput"] input            { background:#1e2024 !important; color:#c8f04a !important; font-family:'IBM Plex Mono',monospace !important; font-size:13px !important; border:none !important; }
+[data-testid="stTextInput"] input:focus      { outline:none !important; box-shadow:0 0 0 1px rgba(200,240,74,0.4) !important; }
+label[data-testid="stWidgetLabel"] p         { color:#7a7975 !important; font-size:12px !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -226,20 +248,30 @@ with st.sidebar:
     dealer_name = st.selectbox("Дилер", list(DEALERS.keys()))
     st.divider()
     st.markdown("**⚙️ Допущения**")
+    def safe_float(key, label, multiplier=1, suffix=""):
+        current = st.session_state.assumptions[key] * multiplier
+        raw = st.text_input(label, value=str(current) if current == int(current) else str(round(current, 4)), key="inp_" + key)
+        try:
+            val = float(raw.replace(",", ".").replace(" ", ""))
+            st.session_state.assumptions[key] = val / multiplier
+        except ValueError:
+            st.caption("Введите число")
+
     with st.expander("💰 Оклады ($/мес)"):
-        st.session_state.assumptions["sal_mgr"] = st.number_input("Менеджер",      value=st.session_state.assumptions["sal_mgr"], step=50)
-        st.session_state.assumptions["sal_acc"] = st.number_input("Бухгалтер",     value=st.session_state.assumptions["sal_acc"], step=50)
-        st.session_state.assumptions["sal_log"] = st.number_input("Логистика",     value=st.session_state.assumptions["sal_log"], step=50)
-        st.session_state.assumptions["sal_off"] = st.number_input("Офис менеджер", value=st.session_state.assumptions["sal_off"], step=50)
-        st.session_state.assumptions["sal_dir"] = st.number_input("Директор",      value=st.session_state.assumptions["sal_dir"], step=50)
+        safe_float("sal_mgr", "Менеджер ($)")
+        safe_float("sal_acc", "Бухгалтер ($)")
+        safe_float("sal_log", "Логистика ($)")
+        safe_float("sal_off", "Офис менеджер ($)")
+        safe_float("sal_dir", "Директор ($)")
     with st.expander("🏦 Налоги (%)"):
-        st.session_state.assumptions["vat"]         = st.number_input("НДС",              value=st.session_state.assumptions["vat"]*100,        step=1.0) / 100
-        st.session_state.assumptions["profit_tax"]  = st.number_input("Налог на прибыль", value=st.session_state.assumptions["profit_tax"]*100,  step=1.0) / 100
-        st.session_state.assumptions["payroll_tax"] = st.number_input("Зарплатный налог", value=st.session_state.assumptions["payroll_tax"]*100, step=1.0) / 100
+        safe_float("vat",         "НДС (%)",              multiplier=100)
+        safe_float("profit_tax",  "Налог на прибыль (%)", multiplier=100)
+        safe_float("payroll_tax", "Зарплатный налог (%)", multiplier=100)
     with st.expander("🏭 Склад"):
-        st.session_state.assumptions["rent_per_m2"] = st.number_input("Аренда ($/м²/мес)",   value=st.session_state.assumptions["rent_per_m2"], step=0.5)
-        st.session_state.assumptions["floors"]      = st.number_input("Этажность",            value=st.session_state.assumptions["floors"], step=1, min_value=1)
-        st.session_state.assumptions["trip_cost"]   = st.number_input("Стоимость рейса ($)",  value=st.session_state.assumptions["trip_cost"], step=10)
+        safe_float("rent_per_m2", "Аренда ($/м²/мес)")
+        safe_float("floors",      "Этажность")
+        safe_float("trip_cost",   "Стоимость рейса ($)")
+        safe_float("rev_per_mgr", "Выручка на менеджера ($)")
     st.divider()
     st.markdown("<p class='mono'>● Сток синхронизирован</p>", unsafe_allow_html=True)
 
