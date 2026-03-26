@@ -19,6 +19,35 @@ html, body, [class*="css"] { font-family: 'Manrope', sans-serif; }
 [data-testid="stTabs"] button { font-family: 'Manrope', sans-serif !important; font-weight: 500; color: #7a7975 !important; border-radius: 8px; }
 [data-testid="stTabs"] button[aria-selected="true"] { color: #c8f04a !important; border-bottom-color: #c8f04a !important; }
 .stButton > button { background: #1e2024; border: 1px solid rgba(255,255,255,0.14); color: #f0eeea; border-radius: 8px; font-family: 'Manrope', sans-serif; font-weight: 500; }
+
+/* Download button — accent green so it stands out */
+[data-testid="stDownloadButton"] > button {
+    background: #c8f04a !important;
+    color: #0e0f11 !important;
+    border: none !important;
+    font-weight: 600 !important;
+    border-radius: 8px;
+    font-family: 'Manrope', sans-serif;
+}
+[data-testid="stDownloadButton"] > button:hover {
+    background: #d8ff5a !important;
+    color: #0e0f11 !important;
+}
+
+/* Selectbox — dark bg, bright text, visible border */
+[data-testid="stSelectbox"] > div > div {
+    background: #1e2024 !important;
+    border: 1px solid rgba(200,240,74,0.4) !important;
+    border-radius: 8px !important;
+    color: #f0eeea !important;
+}
+[data-testid="stSelectbox"] svg { fill: #c8f04a !important; }
+[data-testid="stSelectbox"] span { color: #f0eeea !important; font-weight: 600 !important; }
+
+/* Selectbox dropdown options */
+[data-testid="stSelectbox"] li { background: #1e2024 !important; color: #f0eeea !important; }
+[data-testid="stSelectbox"] li:hover { background: #2a2d32 !important; }
+
 h1, h2, h3 { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; }
 hr { border-color: rgba(255,255,255,0.07) !important; }
 .mono  { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #c8f04a; }
