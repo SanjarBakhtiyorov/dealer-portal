@@ -4,96 +4,73 @@ import numpy as np
 import math
 import io
 
-st.set_page_config(page_title="NormDealer — Нормативная модель", page_icon="📊", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="NormDealer — Нормативная модель",
+    page_icon="📊",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+html, body, [class*="css"]          { font-family: 'Manrope', sans-serif; }
+.stApp                              { background: #0e0f11; color: #f0eeea; }
+p, li, span, div                    { color: #f0eeea; }
+h1,h2,h3,h4                        { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; }
+hr                                  { border-color: rgba(255,255,255,0.07) !important; }
+.mono  { font-family:'IBM Plex Mono',monospace; font-size:12px; color:#c8f04a; }
+.muted { color:#7a7975; font-size:12px; }
 
-/* ── Base ── */
-html, body, [class*="css"] { font-family: 'Manrope', sans-serif; }
-.stApp { background: #0e0f11; color: #f0eeea; }
-p, li, span, label, div { color: #f0eeea; }
+[data-testid="stSidebar"]           { background:#161719 !important; border-right:1px solid rgba(255,255,255,0.07); }
+[data-testid="stSidebar"] *         { color:#f0eeea !important; background-color:transparent; }
 
-/* ── Sidebar ── */
-[data-testid="stSidebar"] { background: #161719 !important; border-right: 1px solid rgba(255,255,255,0.07); }
-[data-testid="stSidebar"] * { color: #f0eeea !important; background-color: transparent; }
+[data-testid="metric-container"]    { background:#161719 !important; border:1px solid rgba(255,255,255,0.07) !important; border-radius:12px !important; padding:16px 20px !important; }
+[data-testid="stMetricLabel"]       { color:#7a7975 !important; font-size:11px !important; text-transform:uppercase; letter-spacing:.08em; font-family:'IBM Plex Mono',monospace !important; }
+[data-testid="stMetricValue"]       { color:#f0eeea !important; font-family:'Manrope',sans-serif !important; font-weight:700 !important; }
+[data-testid="stMetricDelta"]       { font-family:'IBM Plex Mono',monospace !important; font-size:11px !important; }
 
-/* ── Metrics ── */
-[data-testid="metric-container"] { background: #161719 !important; border: 1px solid rgba(255,255,255,0.07) !important; border-radius: 12px !important; padding: 16px 20px !important; }
-[data-testid="stMetricLabel"]    { color: #7a7975 !important; font-size: 11px !important; text-transform: uppercase; letter-spacing: .08em; font-family: 'IBM Plex Mono', monospace !important; }
-[data-testid="stMetricValue"]    { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; font-weight: 700 !important; }
-[data-testid="stMetricDelta"]    { font-family: 'IBM Plex Mono', monospace !important; font-size: 11px !important; }
-[data-testid="stMetricDelta"] svg { display: none; }
+[data-testid="stTabs"] button                       { font-family:'Manrope',sans-serif !important; font-weight:500; color:#7a7975 !important; background:transparent !important; }
+[data-testid="stTabs"] button:hover                 { color:#f0eeea !important; background:transparent !important; }
+[data-testid="stTabs"] button[aria-selected="true"] { color:#c8f04a !important; border-bottom:2px solid #c8f04a !important; background:transparent !important; }
+[data-testid="stTabs"] button p                     { color:inherit !important; }
 
-/* ── Tabs ── */
-[data-testid="stTabs"]                              { background: transparent; }
-[data-testid="stTabs"] button                       { font-family: 'Manrope', sans-serif !important; font-weight: 500; color: #7a7975 !important; background: transparent !important; border-radius: 0; }
-[data-testid="stTabs"] button:hover                 { color: #f0eeea !important; background: transparent !important; }
-[data-testid="stTabs"] button[aria-selected="true"] { color: #c8f04a !important; border-bottom: 2px solid #c8f04a !important; background: transparent !important; }
-[data-testid="stTabs"] button p                     { color: inherit !important; }
+.stButton > button                          { background:#1e2024 !important; border:1px solid rgba(255,255,255,0.14) !important; color:#f0eeea !important; border-radius:8px; font-family:'Manrope',sans-serif; font-weight:500; }
+.stButton > button:hover                    { border-color:rgba(200,240,74,0.5) !important; color:#c8f04a !important; }
+[data-testid="stDownloadButton"] > button   { background:#c8f04a !important; color:#0e0f11 !important; border:none !important; font-weight:700 !important; border-radius:8px; }
+[data-testid="stDownloadButton"] > button:hover { background:#d8ff5a !important; }
+[data-testid="stDownloadButton"] > button p { color:#0e0f11 !important; }
 
-/* ── Buttons ── */
-.stButton > button                          { background: #1e2024 !important; border: 1px solid rgba(255,255,255,0.14) !important; color: #f0eeea !important; border-radius: 8px; font-family: 'Manrope', sans-serif; font-weight: 500; }
-.stButton > button:hover                    { border-color: rgba(200,240,74,0.5) !important; color: #c8f04a !important; }
-[data-testid="stDownloadButton"] > button   { background: #c8f04a !important; color: #0e0f11 !important; border: none !important; font-weight: 700 !important; border-radius: 8px; font-family: 'Manrope', sans-serif; }
-[data-testid="stDownloadButton"] > button:hover { background: #d8ff5a !important; }
-[data-testid="stDownloadButton"] > button p { color: #0e0f11 !important; }
+[data-testid="stSelectbox"] > div > div    { background:#1e2024 !important; border:1px solid rgba(200,240,74,0.35) !important; border-radius:8px !important; }
+[data-testid="stSelectbox"] span           { color:#f0eeea !important; font-weight:600 !important; }
+[data-testid="stSelectbox"] svg            { fill:#c8f04a !important; }
+[data-testid="stSelectbox"] li             { background:#1e2024 !important; color:#f0eeea !important; }
+[data-testid="stSelectbox"] li:hover       { background:#2a2d32 !important; }
 
-/* ── Selectbox ── */
-[data-testid="stSelectbox"] > div > div       { background: #1e2024 !important; border: 1px solid rgba(200,240,74,0.35) !important; border-radius: 8px !important; }
-[data-testid="stSelectbox"] span              { color: #f0eeea !important; font-weight: 600 !important; }
-[data-testid="stSelectbox"] svg               { fill: #c8f04a !important; }
-[data-testid="stSelectbox"] li                { background: #1e2024 !important; color: #f0eeea !important; }
-[data-testid="stSelectbox"] li:hover          { background: #2a2d32 !important; }
+[data-testid="stNumberInput"] > div        { background:#1e2024 !important; border:1px solid rgba(255,255,255,0.12) !important; border-radius:8px !important; }
+[data-testid="stNumberInput"] input        { background:#1e2024 !important; color:#c8f04a !important; font-family:'IBM Plex Mono',monospace !important; font-size:13px !important; border:none !important; }
+[data-testid="stNumberInput"] button       { background:#2a2d32 !important; color:#f0eeea !important; border:none !important; }
+[data-testid="stNumberInput"] button:hover { background:#363a40 !important; color:#c8f04a !important; }
+[data-testid="stNumberInput"] button svg   { fill:#f0eeea !important; }
+label[data-testid="stWidgetLabel"] p       { color:#7a7975 !important; font-size:12px !important; }
 
-/* ── Number inputs ── */
-[data-testid="stNumberInput"] > div           { background: #1e2024 !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 8px !important; }
-[data-testid="stNumberInput"] input           { background: #1e2024 !important; color: #c8f04a !important; font-family: 'IBM Plex Mono', monospace !important; font-size: 13px !important; border: none !important; }
-[data-testid="stNumberInput"] button          { background: #2a2d32 !important; color: #f0eeea !important; border: none !important; border-left: 1px solid rgba(255,255,255,0.08) !important; }
-[data-testid="stNumberInput"] button:hover    { background: #363a40 !important; color: #c8f04a !important; }
-[data-testid="stNumberInput"] button svg      { fill: #f0eeea !important; }
-[data-testid="stNumberInput"] p               { color: #7a7975 !important; font-size: 12px !important; }
-label[data-testid="stWidgetLabel"] p          { color: #7a7975 !important; font-size: 12px !important; }
+[data-testid="stFileUploader"]             { background:#161719 !important; border:1.5px dashed rgba(200,240,74,0.25) !important; border-radius:10px !important; }
+[data-testid="stFileUploader"] *           { color:#f0eeea !important; }
 
-/* ── File uploader ── */
-[data-testid="stFileUploader"]                { background: #161719 !important; border: 1.5px dashed rgba(200,240,74,0.25) !important; border-radius: 10px !important; padding: 8px; }
-[data-testid="stFileUploader"]:hover          { border-color: rgba(200,240,74,0.5) !important; }
-[data-testid="stFileUploader"] *              { color: #f0eeea !important; }
-[data-testid="stFileUploaderDropzoneInput"]   { color: #f0eeea !important; }
+[data-testid="stExpander"]                 { background:#161719 !important; border:1px solid rgba(255,255,255,0.08) !important; border-radius:10px !important; }
+[data-testid="stExpander"] summary         { background:#1e2024 !important; border-radius:10px !important; padding:10px 16px !important; }
+[data-testid="stExpander"] summary:hover   { background:#252830 !important; }
+[data-testid="stExpander"] summary p       { color:#f0eeea !important; font-weight:600 !important; font-size:13px !important; }
+[data-testid="stExpander"] summary svg     { fill:#c8f04a !important; }
+[data-testid="stExpanderDetails"]          { background:#161719 !important; }
+[data-testid="stExpanderDetails"] *        { background-color:transparent; }
 
-/* ── Expander ── */
-[data-testid="stExpander"]                                    { background: #161719 !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 10px !important; }
-[data-testid="stExpander"] summary                            { background: #1e2024 !important; border-radius: 10px !important; padding: 10px 16px !important; }
-[data-testid="stExpander"] summary:hover                      { background: #252830 !important; }
-[data-testid="stExpander"] summary p                          { color: #f0eeea !important; font-weight: 600 !important; font-size: 13px !important; }
-[data-testid="stExpander"] summary svg                        { fill: #c8f04a !important; }
-[data-testid="stExpanderDetails"]                             { background: #161719 !important; }
-[data-testid="stExpanderDetails"] *                           { background-color: transparent; }
-
-/* ── Alerts / info boxes ── */
-[data-testid="stAlert"]                       { border-radius: 8px !important; }
-[data-testid="stAlert"][data-baseweb="notification"] { border-radius: 8px !important; }
-.stSuccess                                    { background: rgba(200,240,74,0.08) !important; border: 1px solid rgba(200,240,74,0.25) !important; color: #c8f04a !important; }
-.stWarning                                    { background: rgba(240,168,50,0.08) !important; border: 1px solid rgba(240,168,50,0.25) !important; }
-.stError                                      { background: rgba(232,92,62,0.08) !important; border: 1px solid rgba(232,92,62,0.25) !important; }
-.stInfo                                       { background: rgba(91,158,245,0.08) !important; border: 1px solid rgba(91,158,245,0.25) !important; }
-
-/* ── Divider ── */
-hr { border-color: rgba(255,255,255,0.07) !important; }
-
-/* ── Typography ── */
-h1, h2, h3, h4 { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; }
-.mono  { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #c8f04a; }
-.muted { color: #7a7975; font-size: 12px; }
-
-/* ── Dataframe wrapper ── */
-[data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
-iframe { color-scheme: dark; }
+[data-testid="stAlert"]    { border-radius:8px !important; }
+iframe                     { color-scheme:dark; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── DATA ─────────────────────────────────────────────────────
+# ── DEALER DATA ───────────────────────────────────────────────
 DEALERS = {
     "Бахтиёр Абу-Сахий":  {"sap": "1000001081", "rev": 1303952, "pallets": 11101, "area": 5002.8, "gross_pct": 0.0592},
     "Улугбек Самарканд":  {"sap": "1000000029", "rev": 1060885, "pallets": 4854,  "area": 2187.5, "gross_pct": 0.0607},
@@ -112,33 +89,59 @@ DEFAULT_ASSUMPTIONS = {
     "sal_mgr": 600, "sal_acc": 700, "sal_log": 400, "sal_off": 500, "sal_dir": 1200,
     "rev_per_mgr": 350000, "rent_per_m2": 2.0, "trip_cost": 50, "floors": 2,
 }
-
 if "assumptions"    not in st.session_state: st.session_state.assumptions    = DEFAULT_ASSUMPTIONS.copy()
-
-# ── DARK TABLE RENDERER (avoids white iframe flash) ──────────
-def dark_table(df):
-    """Render a DataFrame as a styled dark HTML table."""
-    rows_html = ""
-    # Header
-    rows_html += "<tr>" + "".join(f'<th>{c}</th>' for c in df.columns) + "</tr>"
-    # Rows
-    for _, row in df.iterrows():
-        rows_html += "<tr>" + "".join(f'<td>{v}</td>' for v in row) + "</tr>"
-    return st.markdown(f"""
-<div style="overflow-x:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.08);margin-bottom:8px">
-<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Manrope',sans-serif">
-  <thead style="background:#1e2024;color:#7a7975;font-size:11px;text-transform:uppercase;letter-spacing:.06em">
-    {rows_html.split('</tr>')[0]}</tr>
-  </thead>
-  <tbody>
-    {''.join('<tr style="border-top:1px solid rgba(255,255,255,0.06)">' + r + '</tr>'
-             for r in ('<tr>' + rows_html.split('<tr>',1)[1]).split('<tr>')[1:])}
-  </tbody>
-</table>
-</div>""", unsafe_allow_html=True)
 if "stock_override" not in st.session_state: st.session_state.stock_override = {}
 
-# ── CALC ─────────────────────────────────────────────────────
+# ── HELPERS ───────────────────────────────────────────────────
+def fmt(v):    return f"${v:,.0f}"
+def fmtpct(v): return f"{v*100:.2f}%"
+
+def dark_table(df):
+    th = 'padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:#7a7975;font-weight:500;border-bottom:1px solid rgba(255,255,255,0.08)'
+    td = 'padding:9px 12px;border-bottom:1px solid rgba(255,255,255,0.05);color:#f0eeea;font-size:13px'
+    head = "".join("<th style='" + th + "'>" + str(c) + "</th>" for c in df.columns)
+    body = ""
+    for _, row in df.iterrows():
+        cells = "".join("<td style='" + td + "'>" + str(v) + "</td>" for v in row)
+        body += "<tr>" + cells + "</tr>"
+    html = (
+        "<div style='overflow-x:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.08);margin-bottom:12px;background:#161719'>"
+        "<table style='width:100%;border-collapse:collapse;font-family:Manrope,sans-serif'>"
+        "<thead><tr>" + head + "</tr></thead>"
+        "<tbody>" + body + "</tbody>"
+        "</table></div>"
+    )
+    st.markdown(html, unsafe_allow_html=True)
+
+def cat_bar(icon, label, val, rev, color, max_val):
+    pct = int(val / max_val * 100)
+    html = (
+        "<div style='background:#161719;border:1px solid rgba(255,255,255,0.07);border-radius:10px;"
+        "padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px'>"
+        "<span style='font-size:18px;width:24px'>" + icon + "</span>"
+        "<div style='flex:1'>"
+        "<div style='font-size:13px;font-weight:600;margin-bottom:6px'>" + label + "</div>"
+        "<div style='height:4px;background:rgba(255,255,255,0.07);border-radius:2px'>"
+        "<div style='height:4px;width:" + str(pct) + "%;background:" + color + ";border-radius:2px'></div>"
+        "</div></div>"
+        "<div style='text-align:right'>"
+        "<div style='font-family:IBM Plex Mono,monospace;font-size:13px;font-weight:600'>" + fmt(val) + "</div>"
+        "<div style='font-size:11px;color:#7a7975'>" + fmtpct(val / rev) + "</div>"
+        "</div></div>"
+    )
+    st.markdown(html, unsafe_allow_html=True)
+
+def kv_row(k, v):
+    html = (
+        "<div style='display:flex;justify-content:space-between;padding:7px 0;"
+        "border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px'>"
+        "<span style='color:#7a7975'>" + k + "</span>"
+        "<span style='font-family:IBM Plex Mono,monospace;color:#c8f04a'>" + v + "</span>"
+        "</div>"
+    )
+    st.markdown(html, unsafe_allow_html=True)
+
+# ── CALC ──────────────────────────────────────────────────────
 def calc_norms(rev, pallets, area, gross_pct, a):
     gross       = rev * gross_pct
     mgr_count   = max(1, math.ceil(rev / a["rev_per_mgr"]))
@@ -170,7 +173,7 @@ def process_stock_file(df):
     col_map = {}
     for c in df.columns:
         cl = c.lower()
-        if   any(x in cl for x in ["артикул","article","sku","код"]):            col_map["sku"] = c
+        if   any(x in cl for x in ["артикул","article","sku","код"]):           col_map["sku"] = c
         elif any(x in cl for x in ["остаток","qty","quantity","stock","кол"]):   col_map["qty"] = c
         elif any(x in cl for x in ["шт/поддон","поддон","pallet","шт/п"]):      col_map["ppu"] = c
     if "qty" not in col_map or "ppu" not in col_map:
@@ -182,26 +185,23 @@ def process_stock_file(df):
     area = round(math.ceil(total_pallets / math.floor(6.0 / 0.75)) * 0.322 * 1.4, 1)
     return {"pallets": total_pallets, "area": area, "sku_count": int((df["qty"] > 0).sum())}, None
 
-# ── CSV EXPORT (no openpyxl / xlsxwriter needed) ─────────────
-def df_to_csv(df):
-    return df.to_csv(index=False).encode("utf-8-sig")   # utf-8-sig = Excel opens Cyrillic correctly
-
 def build_report_csv(name, n):
     rows = [
-        ("Дилер",             name,             ""),
-        ("",                  "",               ""),
-        ("Выручка",           f"${n['rev']:,.0f}",        "100.00%"),
-        ("Валовая прибыль",   f"${n['gross']:,.0f}",      f"{n['gross']/n['rev']*100:.2f}%"),
-        ("",                  "",               ""),
-        ("Персонал",          f"${n['personnel']:,.0f}",  f"{n['personnel']/n['rev']*100:.2f}%"),
-        ("Налоги",            f"${n['taxes']:,.0f}",      f"{n['taxes']/n['rev']*100:.2f}%"),
-        ("Склад и логистика", f"${n['warehouse']:,.0f}",  f"{n['warehouse']/n['rev']*100:.2f}%"),
-        ("Прочие расходы",    f"${n['other']:,.0f}",      f"{n['other']/n['rev']*100:.2f}%"),
-        ("ИТОГО РАСХОДЫ",     f"${n['total']:,.0f}",      f"{n['pct_of_rev']*100:.2f}%"),
-        ("",                  "",               ""),
-        ("Чистая прибыль",    f"${n['net_profit']:,.0f}", f"{n['net_profit']/n['rev']*100:.2f}%"),
+        ("Дилер",             name,                   ""),
+        ("",                  "",                     ""),
+        ("Выручка",           fmt(n["rev"]),           "100.00%"),
+        ("Валовая прибыль",   fmt(n["gross"]),         fmtpct(n["gross"]/n["rev"])),
+        ("",                  "",                     ""),
+        ("Персонал",          fmt(n["personnel"]),     fmtpct(n["personnel"]/n["rev"])),
+        ("Налоги",            fmt(n["taxes"]),         fmtpct(n["taxes"]/n["rev"])),
+        ("Склад и логистика", fmt(n["warehouse"]),     fmtpct(n["warehouse"]/n["rev"])),
+        ("Прочие расходы",    fmt(n["other"]),         fmtpct(n["other"]/n["rev"])),
+        ("ИТОГО РАСХОДЫ",     fmt(n["total"]),         fmtpct(n["pct_of_rev"])),
+        ("",                  "",                     ""),
+        ("Чистая прибыль",    fmt(n["net_profit"]),    fmtpct(n["net_profit"]/n["rev"])),
     ]
-    return df_to_csv(pd.DataFrame(rows, columns=["Статья", "$/мес", "% выручки"]))
+    df = pd.DataFrame(rows, columns=["Статья", "$/мес", "% выручки"])
+    return df.to_csv(index=False).encode("utf-8-sig")
 
 def build_stock_template_csv():
     df = pd.DataFrame([
@@ -211,11 +211,7 @@ def build_stock_template_csv():
         ("FTHD001076SER/D",  "Холод Samsung RB29 FERNDSA Серый",    87,   1, 0.380),
         ("FKV0760BEL",       "Кух вытяжка ART-0760 Белый Prima",    10,   2, 0.212),
     ], columns=["Артикул *", "Описание", "Остаток (шт) *", "Шт/поддон *", "Объем ед. (м³)"])
-    return df_to_csv(df)
-
-# ── HELPERS ──────────────────────────────────────────────────
-def fmt(v):    return f"${v:,.0f}"
-def fmtpct(v): return f"{v*100:.2f}%"
+    return df.to_csv(index=False).encode("utf-8-sig")
 
 def get_dealer(name):
     d = DEALERS[name].copy()
@@ -223,10 +219,10 @@ def get_dealer(name):
         d.update(st.session_state.stock_override[name])
     return d
 
-# ── SIDEBAR ──────────────────────────────────────────────────
+# ── SIDEBAR ───────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### 📊 NormDealer")
-    st.markdown("<div class='muted' style='font-size:11px;margin-bottom:16px'>Нормативная модель · 2026</div>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size:11px;color:#7a7975;margin-bottom:16px'>Нормативная модель · 2026</p>", unsafe_allow_html=True)
     dealer_name = st.selectbox("Дилер", list(DEALERS.keys()))
     st.divider()
     st.markdown("**⚙️ Допущения**")
@@ -245,22 +241,27 @@ with st.sidebar:
         st.session_state.assumptions["floors"]      = st.number_input("Этажность",            value=st.session_state.assumptions["floors"], step=1, min_value=1)
         st.session_state.assumptions["trip_cost"]   = st.number_input("Стоимость рейса ($)",  value=st.session_state.assumptions["trip_cost"], step=10)
     st.divider()
-    st.markdown("<div class='mono'>● Сток синхронизирован</div>", unsafe_allow_html=True)
+    st.markdown("<p class='mono'>● Сток синхронизирован</p>", unsafe_allow_html=True)
 
-# ── MAIN ─────────────────────────────────────────────────────
+# ── MAIN ──────────────────────────────────────────────────────
 d = get_dealer(dealer_name)
 n = calc_norms(d["rev"], d["pallets"], d["area"], d["gross_pct"], st.session_state.assumptions)
 a = st.session_state.assumptions
 
 col_h1, col_h2 = st.columns([3, 1])
 with col_h1:
-    st.markdown(f"## {dealer_name}")
-    st.markdown(f"<div class='muted'>SAP: {d['sap']} · Паллетомест: {d['pallets']:,} · Площадь: {d['area']:,.0f} м²</div>", unsafe_allow_html=True)
+    st.markdown("## " + dealer_name)
+    st.markdown(
+        "<p style='color:#7a7975;font-size:13px'>SAP: " + d["sap"] +
+        " · Паллетомест: " + f"{d['pallets']:,}" +
+        " · Площадь: " + f"{d['area']:,.0f}" + " м²</p>",
+        unsafe_allow_html=True,
+    )
 with col_h2:
     st.download_button(
         "⬇ Скачать отчёт (CSV)",
         data=build_report_csv(dealer_name, n),
-        file_name=f"норматив_{dealer_name.replace(' ', '_')}.csv",
+        file_name="норматив_" + dealer_name.replace(" ", "_") + ".csv",
         mime="text/csv",
         use_container_width=True,
     )
@@ -282,93 +283,72 @@ with tab1:
     with left:
         st.markdown("**Расходы по категориям**")
         cats = [
-            ("👤 Персонал",          n["personnel"], "#5b9ef5"),
-            ("🏦 Налоги",            n["taxes"],     "#f0a832"),
-            ("🏭 Склад и логистика", n["warehouse"], "#e85c3e"),
-            ("⚡ Прочие",            n["other"],     "#c8f04a"),
+            ("👤", "Персонал",          n["personnel"], "#5b9ef5"),
+            ("🏦", "Налоги",            n["taxes"],     "#f0a832"),
+            ("🏭", "Склад и логистика", n["warehouse"], "#e85c3e"),
+            ("⚡", "Прочие",            n["other"],     "#c8f04a"),
         ]
-        mx = max(c[1] for c in cats)
-        for cat, val, color in cats:
-            st.markdown(f"""
-            <div style="background:#161719;border:1px solid rgba(255,255,255,0.07);border-radius:10px;
-                padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:14px">
-              <span style="font-size:18px;width:24px">{cat.split()[0]}</span>
-              <div style="flex:1">
-                <div style="font-size:13px;font-weight:600;margin-bottom:6px">{' '.join(cat.split()[1:])}</div>
-                <div style="height:4px;background:rgba(255,255,255,0.07);border-radius:2px">
-                  <div style="height:4px;width:{int(val/mx*100)}%;background:{color};border-radius:2px"></div>
-                </div>
-              </div>
-              <div style="text-align:right">
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600">{fmt(val)}</div>
-                <div style="font-size:11px;color:#7a7975">{fmtpct(val/d['rev'])}</div>
-              </div>
-            </div>""", unsafe_allow_html=True)
+        mx = max(c[2] for c in cats)
+        for icon, label, val, color in cats:
+            cat_bar(icon, label, val, d["rev"], color, mx)
 
     with right:
         st.markdown("**Статус нормативов**")
-        if   n["pct_of_rev"] < 0.025: st.success(f"✓ Расходы {fmtpct(n['pct_of_rev'])} — в норме (< 2.5%)")
-        elif n["pct_of_rev"] < 0.04:  st.warning(f"⚠ Расходы {fmtpct(n['pct_of_rev'])} — немного выше ориентира")
-        else:                          st.error(f"✗ Расходы {fmtpct(n['pct_of_rev'])} — выше нормы")
-        if n["net_profit"] > 0: st.success(f"✓ Чистая прибыль: {fmt(n['net_profit'])}/мес")
-        else:                   st.error(f"✗ Убыток: {fmt(n['net_profit'])}/мес")
-        st.info(f"ℹ Нормативная площадь: {n['norm_area']:.0f} м²  ·  Рейсов/мес: {n['trips']}")
+        if   n["pct_of_rev"] < 0.025: st.success("✓ Расходы " + fmtpct(n["pct_of_rev"]) + " — в норме (< 2.5%)")
+        elif n["pct_of_rev"] < 0.04:  st.warning("⚠ Расходы " + fmtpct(n["pct_of_rev"]) + " — немного выше ориентира")
+        else:                          st.error("✗ Расходы "   + fmtpct(n["pct_of_rev"]) + " — выше нормы")
+        if n["net_profit"] > 0: st.success("✓ Чистая прибыль: " + fmt(n["net_profit"]) + "/мес")
+        else:                   st.error("✗ Убыток: "           + fmt(n["net_profit"]) + "/мес")
+        st.info("ℹ Нормативная площадь: " + str(round(n["norm_area"])) + " м²  ·  Рейсов/мес: " + str(n["trips"]))
         st.markdown("---")
-        for k, v in {
-            "Паллетомест":       f"{d['pallets']:,}",
-            "Площадь (м²)":      f"{d['area']:,.0f}",
-            "Норм. площадь (м²)":f"{n['norm_area']:.0f}",
-            "Аренда / мес":      fmt(n["rent"]),
-        }.items():
-            st.markdown(f"""<div style="display:flex;justify-content:space-between;padding:7px 0;
-                border-bottom:1px solid rgba(255,255,255,0.05);font-size:12px">
-                <span style="color:#7a7975">{k}</span>
-                <span style="font-family:'IBM Plex Mono',monospace;color:#c8f04a">{v}</span>
-            </div>""", unsafe_allow_html=True)
+        kv_row("Паллетомест",        f"{d['pallets']:,}")
+        kv_row("Площадь (м²)",       f"{d['area']:,.0f}")
+        kv_row("Норм. площадь (м²)", f"{n['norm_area']:.0f}")
+        kv_row("Аренда / мес",       fmt(n["rent"]))
 
     st.markdown("---")
     st.markdown("**Структура затрат vs. норматив**")
     dark_table(pd.DataFrame([
-        {"Категория": "Персонал",         "$/мес": fmt(n["personnel"]), "% выручки": fmtpct(n["personnel"]/d["rev"]), "Ориентир": "0.8–1.4%", "Статус": "✓" if n["personnel"]/d["rev"] <= 0.014 else "⚠"},
-        {"Категория": "Налоги",           "$/мес": fmt(n["taxes"]),     "% выручки": fmtpct(n["taxes"]/d["rev"]),     "Ориентир": "0.4–0.8%", "Статус": "✓" if n["taxes"]/d["rev"]     <= 0.008 else "⚠"},
-        {"Категория": "Склад/логистика",  "$/мес": fmt(n["warehouse"]), "% выручки": fmtpct(n["warehouse"]/d["rev"]), "Ориентир": "0.5–0.9%", "Статус": "✓" if n["warehouse"]/d["rev"] <= 0.009 else "⚠"},
-        {"Категория": "Прочее",           "$/мес": fmt(n["other"]),     "% выручки": fmtpct(n["other"]/d["rev"]),     "Ориентир": "0.3–0.7%", "Статус": "✓" if n["other"]/d["rev"]    <= 0.007 else "⚠"},
-        {"Категория": "ИТОГО",            "$/мес": fmt(n["total"]),     "% выручки": fmtpct(n["pct_of_rev"]),         "Ориентир": "2.0–3.5%", "Статус": "✓" if n["pct_of_rev"]        <= 0.035 else "⚠"},
-    ]), use_container_width=True, hide_index=True)
+        {"Категория": "Персонал",        "$/мес": fmt(n["personnel"]), "% выручки": fmtpct(n["personnel"]/d["rev"]), "Ориентир": "0.8-1.4%", "Статус": "OK" if n["personnel"]/d["rev"] <= 0.014 else "!"},
+        {"Категория": "Налоги",          "$/мес": fmt(n["taxes"]),     "% выручки": fmtpct(n["taxes"]/d["rev"]),     "Ориентир": "0.4-0.8%", "Статус": "OK" if n["taxes"]/d["rev"]     <= 0.008 else "!"},
+        {"Категория": "Склад/логистика", "$/мес": fmt(n["warehouse"]), "% выручки": fmtpct(n["warehouse"]/d["rev"]), "Ориентир": "0.5-0.9%", "Статус": "OK" if n["warehouse"]/d["rev"] <= 0.009 else "!"},
+        {"Категория": "Прочее",          "$/мес": fmt(n["other"]),     "% выручки": fmtpct(n["other"]/d["rev"]),     "Ориентир": "0.3-0.7%", "Статус": "OK" if n["other"]/d["rev"]    <= 0.007 else "!"},
+        {"Категория": "ИТОГО",           "$/мес": fmt(n["total"]),     "% выручки": fmtpct(n["pct_of_rev"]),         "Ориентир": "2.0-3.5%", "Статус": "OK" if n["pct_of_rev"]        <= 0.035 else "!"},
+    ]))
 
 # ════ TAB 2 ══════════════════════════════════════════════════
 with tab2:
     st.markdown("### Детализация по статьям")
-    for title, total, rows in [
+    sections = [
         ("1. Персонал", n["personnel"], [
-            (f"Менеджеры ({n['mgr_count']} × ${a['sal_mgr']})",  n["mgr_count"] * a["sal_mgr"]),
-            (f"Бухгалтер (1 × ${a['sal_acc']})",                 a["sal_acc"]),
-            (f"Логистика ({n['log_count']} × ${a['sal_log']})",  n["log_count"] * a["sal_log"]),
-            (f"Офис менеджер (1 × ${a['sal_off']})",             a["sal_off"]),
-            (f"Директор (1 × ${a['sal_dir']})",                  a["sal_dir"]),
+            ("Менеджеры (" + str(n["mgr_count"]) + " x $" + str(a["sal_mgr"]) + ")", n["mgr_count"] * a["sal_mgr"]),
+            ("Бухгалтер (1 x $" + str(a["sal_acc"]) + ")",                           a["sal_acc"]),
+            ("Логистика (" + str(n["log_count"]) + " x $" + str(a["sal_log"]) + ")", n["log_count"] * a["sal_log"]),
+            ("Офис менеджер (1 x $" + str(a["sal_off"]) + ")",                       a["sal_off"]),
+            ("Директор (1 x $" + str(a["sal_dir"]) + ")",                            a["sal_dir"]),
         ]),
         ("2. Налоги", n["taxes"], [
-            (f"НДС ({fmt(n['gross'])} × {a['vat']*100:.0f}%)",                          n["tax_vat"]),
-            (f"Налог на прибыль ({fmt(n['gross'])} × {a['profit_tax']*100:.0f}%)",      n["tax_profit"]),
-            (f"Зарплатный налог ({fmt(n['personnel'])} × {a['payroll_tax']*100:.0f}%)", n["tax_payroll"]),
+            ("НДС (" + fmt(n["gross"]) + " x " + str(round(a["vat"]*100)) + "%)",           n["tax_vat"]),
+            ("Налог на прибыль (" + fmt(n["gross"]) + " x " + str(round(a["profit_tax"]*100)) + "%)", n["tax_profit"]),
+            ("Зарплатный налог (" + fmt(n["personnel"]) + " x " + str(round(a["payroll_tax"]*100)) + "%)", n["tax_payroll"]),
         ]),
         ("3. Склад и логистика", n["warehouse"], [
-            (f"Аренда ({n['norm_area']:.0f} м² × ${a['rent_per_m2']}/м²)",   n["rent"]),
-            (f"Погрузка/разгрузка ({n['trips']} рейсов × ${a['trip_cost']})", n["loading"]),
+            ("Аренда (" + str(round(n["norm_area"])) + " м² x $" + str(a["rent_per_m2"]) + "/м²)", n["rent"]),
+            ("Погрузка/разгрузка (" + str(n["trips"]) + " рейсов x $" + str(a["trip_cost"]) + ")", n["loading"]),
         ]),
         ("4. Прочие расходы", n["other"], [
-            ("Топливо",            n["fuel"]),
-            ("Мобильная связь",    n["mobile"]),
-            ("Интернет",           50),
-            (f"Банк ({fmt(d['rev'])} × 0.1%)", d["rev"] * 0.001),
+            ("Топливо",                                      n["fuel"]),
+            ("Мобильная связь",                              n["mobile"]),
+            ("Интернет",                                     50),
+            ("Банк (" + fmt(d["rev"]) + " x 0.1%)",         d["rev"] * 0.001),
         ]),
-    ]:
-        with st.expander(f"{title}  —  {fmt(total)}/мес  ({fmtpct(total/d['rev'])} выручки)", expanded=True):
-            dark_table(pd.DataFrame(
-                [(lb, f"${v:,.0f}", f"{v/d['rev']*100:.3f}%") for lb, v in rows] +
-                [("── Итого", f"${total:,.0f}", f"{total/d['rev']*100:.3f}%")],
-                columns=["Статья", "$/мес", "% выручки"]
-            ), use_container_width=True, hide_index=True)
+    ]
+    for title, total, rows in sections:
+        label = title + "  —  " + fmt(total) + "/мес  (" + fmtpct(total/d["rev"]) + " выручки)"
+        with st.expander(label, expanded=True):
+            table_rows = [(lb, fmt(v), fmtpct(v/d["rev"])) for lb, v in rows]
+            table_rows.append(("Итого", fmt(total), fmtpct(total/d["rev"])))
+            dark_table(pd.DataFrame(table_rows, columns=["Статья", "$/мес", "% выручки"]))
 
 # ════ TAB 3 ══════════════════════════════════════════════════
 with tab3:
@@ -377,42 +357,37 @@ with tab3:
 
     with col_up1:
         st.markdown("**Загрузка файла**")
-        st.info("Принимаются форматы: **CSV** или **Excel (.xlsx)**")
-        uploaded = st.file_uploader("Перетащите файл сюда", type=["csv", "xlsx", "xls"], label_visibility="collapsed")
-
+        st.info("Принимаются форматы: CSV или Excel (.xlsx)")
+        uploaded = st.file_uploader("Перетащите файл сюда", type=["csv","xlsx","xls"], label_visibility="collapsed")
         if uploaded:
             try:
                 if uploaded.name.endswith(".csv"):
                     df_raw = pd.read_csv(uploaded)
                     result, err = process_stock_file(df_raw)
                 else:
-                    # Excel — try without openpyxl by reading as csv fallback
                     try:
                         df_raw = pd.read_excel(uploaded, header=None)
                         hrow = 0
                         for i, row in df_raw.iterrows():
                             if any(x in " ".join(str(v).lower() for v in row) for x in ["артикул","остаток","sku"]):
                                 hrow = i; break
-                        df_data = pd.read_excel(uploaded, header=hrow)
-                        result, err = process_stock_file(df_data)
+                        result, err = process_stock_file(pd.read_excel(uploaded, header=hrow))
                     except Exception:
-                        st.warning("Excel не удалось прочитать. Пожалуйста, сохраните файл как CSV и загрузите снова.")
-                        result, err = None, "Используйте CSV формат"
-
+                        st.warning("Excel не удалось прочитать. Пожалуйста, используйте CSV формат.")
+                        result, err = None, "Используйте CSV"
                 if err:
-                    st.error(f"❌ {err}")
+                    st.error("Ошибка: " + err)
                 elif result:
-                    st.success(f"✓ Файл обработан: {result['sku_count']} SKU с остатком")
+                    st.success("Файл обработан: " + str(result["sku_count"]) + " SKU с остатком")
                     r1, r2 = st.columns(2)
-                    with r1: st.metric("Паллетомест",   f"{result['pallets']:,}")
-                    with r2: st.metric("Расч. площадь", f"{result['area']:,.0f} м²")
-                    if st.button("✓ Применить к модели", type="primary"):
+                    with r1: st.metric("Паллетомест",   str(result["pallets"]))
+                    with r2: st.metric("Расч. площадь", str(result["area"]) + " м²")
+                    if st.button("Применить к модели", type="primary"):
                         st.session_state.stock_override[dealer_name] = {"pallets": result["pallets"], "area": result["area"]}
-                        st.success("Данные обновлены. Норматив пересчитан.")
+                        st.success("Данные обновлены.")
                         st.rerun()
             except Exception as e:
-                st.error(f"❌ Ошибка чтения файла: {e}")
-
+                st.error("Ошибка чтения файла: " + str(e))
         st.markdown("---")
         st.download_button(
             "⬇ Скачать шаблон CSV",
@@ -425,17 +400,17 @@ with tab3:
     with col_up2:
         st.markdown("**Требования к файлу**")
         dark_table(pd.DataFrame([
-            {"Колонка": "Артикул",        "Тип": "текст", "Пример": "FKN90014BEL-IN", "Обязательно": "✓ Да"},
-            {"Колонка": "Остаток (шт)",   "Тип": "число", "Пример": "42",             "Обязательно": "✓ Да"},
-            {"Колонка": "Шт/поддон",      "Тип": "число", "Пример": "1",              "Обязательно": "✓ Да"},
+            {"Колонка": "Артикул",        "Тип": "текст", "Пример": "FKN90014BEL-IN", "Обязательно": "Да"},
+            {"Колонка": "Остаток (шт)",   "Тип": "число", "Пример": "42",             "Обязательно": "Да"},
+            {"Колонка": "Шт/поддон",      "Тип": "число", "Пример": "1",              "Обязательно": "Да"},
             {"Колонка": "Описание",       "Тип": "текст", "Пример": "Конд ВБ...",      "Обязательно": "Нет"},
-            {"Колонка": "Объем ед. (м³)", "Тип": "число", "Пример": "0.423",          "Обязательно": "Нет"},
-        ]), use_container_width=True, hide_index=True)
-        st.info("💡 Рекомендуется загружать в формате **CSV** — открывается в Excel и не требует дополнительных библиотек.")
+            {"Колонка": "Объем (м3)",     "Тип": "число", "Пример": "0.423",          "Обязательно": "Нет"},
+        ]))
+        st.info("Рекомендуется загружать CSV — открывается в Excel, работает без доп. библиотек.")
         if dealer_name in st.session_state.stock_override:
             ovr = st.session_state.stock_override[dealer_name]
-            st.success(f"✓ Загружено: {ovr['pallets']:,} паллетомест, {ovr['area']:,.0f} м²")
-            if st.button("✕ Сбросить к исходным"):
+            st.success("Загружено: " + f"{ovr['pallets']:,}" + " паллетомест, " + f"{ovr['area']:,.0f}" + " м²")
+            if st.button("Сбросить к исходным"):
                 del st.session_state.stock_override[dealer_name]; st.rerun()
 
 # ════ TAB 4 ══════════════════════════════════════════════════
@@ -452,7 +427,7 @@ with tab4:
             "% выручки":      fmtpct(n_["pct_of_rev"]),
             "Паллетомест":    f"{d_['pallets']:,}",
             "Чистая прибыль": fmt(n_["net_profit"]),
-            "Статус":         "✓ Жизнеспособен" if n_["net_profit"] > 0 else "⚠ Убыток",
+            "Статус":         "Жизнеспособен" if n_["net_profit"] > 0 else "Убыток",
         })
     df_all = pd.DataFrame(all_rows)
 
@@ -471,7 +446,7 @@ with tab4:
     dark_table(df_all)
     st.download_button(
         "⬇ Экспорт всех дилеров (CSV)",
-        data=df_to_csv(df_all),
+        data=df_all.to_csv(index=False).encode("utf-8-sig"),
         file_name="все_дилеры_нормативы.csv",
         mime="text/csv",
     )
