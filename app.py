@@ -9,82 +9,89 @@ st.set_page_config(page_title="NormDealer — Нормативная модел�
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap');
+
+/* ── Base ── */
 html, body, [class*="css"] { font-family: 'Manrope', sans-serif; }
 .stApp { background: #0e0f11; color: #f0eeea; }
+p, li, span, label, div { color: #f0eeea; }
+
+/* ── Sidebar ── */
 [data-testid="stSidebar"] { background: #161719 !important; border-right: 1px solid rgba(255,255,255,0.07); }
-[data-testid="stSidebar"] * { color: #f0eeea !important; }
-[data-testid="metric-container"] { background: #161719; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px 20px; }
-[data-testid="stMetricLabel"] { color: #7a7975 !important; font-size: 11px !important; text-transform: uppercase; letter-spacing: .08em; font-family: 'IBM Plex Mono', monospace !important; }
-[data-testid="stMetricValue"] { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; font-weight: 700 !important; }
-[data-testid="stTabs"] button { font-family: 'Manrope', sans-serif !important; font-weight: 500; color: #7a7975 !important; border-radius: 8px; }
-[data-testid="stTabs"] button[aria-selected="true"] { color: #c8f04a !important; border-bottom-color: #c8f04a !important; }
-.stButton > button { background: #1e2024; border: 1px solid rgba(255,255,255,0.14); color: #f0eeea; border-radius: 8px; font-family: 'Manrope', sans-serif; font-weight: 500; }
+[data-testid="stSidebar"] * { color: #f0eeea !important; background-color: transparent; }
 
-/* Download button — accent green so it stands out */
-[data-testid="stDownloadButton"] > button {
-    background: #c8f04a !important;
-    color: #0e0f11 !important;
-    border: none !important;
-    font-weight: 600 !important;
-    border-radius: 8px;
-    font-family: 'Manrope', sans-serif;
-}
-[data-testid="stDownloadButton"] > button:hover {
-    background: #d8ff5a !important;
-    color: #0e0f11 !important;
-}
+/* ── Metrics ── */
+[data-testid="metric-container"] { background: #161719 !important; border: 1px solid rgba(255,255,255,0.07) !important; border-radius: 12px !important; padding: 16px 20px !important; }
+[data-testid="stMetricLabel"]    { color: #7a7975 !important; font-size: 11px !important; text-transform: uppercase; letter-spacing: .08em; font-family: 'IBM Plex Mono', monospace !important; }
+[data-testid="stMetricValue"]    { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; font-weight: 700 !important; }
+[data-testid="stMetricDelta"]    { font-family: 'IBM Plex Mono', monospace !important; font-size: 11px !important; }
+[data-testid="stMetricDelta"] svg { display: none; }
 
-/* Selectbox — dark bg, bright text, visible border */
-[data-testid="stSelectbox"] > div > div {
-    background: #1e2024 !important;
-    border: 1px solid rgba(200,240,74,0.4) !important;
-    border-radius: 8px !important;
-    color: #f0eeea !important;
-}
-[data-testid="stSelectbox"] svg { fill: #c8f04a !important; }
-[data-testid="stSelectbox"] span { color: #f0eeea !important; font-weight: 600 !important; }
+/* ── Tabs ── */
+[data-testid="stTabs"]                              { background: transparent; }
+[data-testid="stTabs"] button                       { font-family: 'Manrope', sans-serif !important; font-weight: 500; color: #7a7975 !important; background: transparent !important; border-radius: 0; }
+[data-testid="stTabs"] button:hover                 { color: #f0eeea !important; background: transparent !important; }
+[data-testid="stTabs"] button[aria-selected="true"] { color: #c8f04a !important; border-bottom: 2px solid #c8f04a !important; background: transparent !important; }
+[data-testid="stTabs"] button p                     { color: inherit !important; }
 
-/* Selectbox dropdown options */
-[data-testid="stSelectbox"] li { background: #1e2024 !important; color: #f0eeea !important; }
-[data-testid="stSelectbox"] li:hover { background: #2a2d32 !important; }
+/* ── Buttons ── */
+.stButton > button                          { background: #1e2024 !important; border: 1px solid rgba(255,255,255,0.14) !important; color: #f0eeea !important; border-radius: 8px; font-family: 'Manrope', sans-serif; font-weight: 500; }
+.stButton > button:hover                    { border-color: rgba(200,240,74,0.5) !important; color: #c8f04a !important; }
+[data-testid="stDownloadButton"] > button   { background: #c8f04a !important; color: #0e0f11 !important; border: none !important; font-weight: 700 !important; border-radius: 8px; font-family: 'Manrope', sans-serif; }
+[data-testid="stDownloadButton"] > button:hover { background: #d8ff5a !important; }
+[data-testid="stDownloadButton"] > button p { color: #0e0f11 !important; }
 
-h1, h2, h3 { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; }
+/* ── Selectbox ── */
+[data-testid="stSelectbox"] > div > div       { background: #1e2024 !important; border: 1px solid rgba(200,240,74,0.35) !important; border-radius: 8px !important; }
+[data-testid="stSelectbox"] span              { color: #f0eeea !important; font-weight: 600 !important; }
+[data-testid="stSelectbox"] svg               { fill: #c8f04a !important; }
+[data-testid="stSelectbox"] li                { background: #1e2024 !important; color: #f0eeea !important; }
+[data-testid="stSelectbox"] li:hover          { background: #2a2d32 !important; }
+
+/* ── Number inputs ── */
+[data-testid="stNumberInput"] > div           { background: #1e2024 !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 8px !important; }
+[data-testid="stNumberInput"] input           { background: #1e2024 !important; color: #c8f04a !important; font-family: 'IBM Plex Mono', monospace !important; font-size: 13px !important; border: none !important; }
+[data-testid="stNumberInput"] button          { background: #2a2d32 !important; color: #f0eeea !important; border: none !important; border-left: 1px solid rgba(255,255,255,0.08) !important; }
+[data-testid="stNumberInput"] button:hover    { background: #363a40 !important; color: #c8f04a !important; }
+[data-testid="stNumberInput"] button svg      { fill: #f0eeea !important; }
+[data-testid="stNumberInput"] p               { color: #7a7975 !important; font-size: 12px !important; }
+label[data-testid="stWidgetLabel"] p          { color: #7a7975 !important; font-size: 12px !important; }
+
+/* ── File uploader ── */
+[data-testid="stFileUploader"]                { background: #161719 !important; border: 1.5px dashed rgba(200,240,74,0.25) !important; border-radius: 10px !important; padding: 8px; }
+[data-testid="stFileUploader"]:hover          { border-color: rgba(200,240,74,0.5) !important; }
+[data-testid="stFileUploader"] *              { color: #f0eeea !important; }
+[data-testid="stFileUploaderDropzoneInput"]   { color: #f0eeea !important; }
+
+/* ── Expander ── */
+[data-testid="stExpander"]                                    { background: #161719 !important; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 10px !important; }
+[data-testid="stExpander"] summary                            { background: #1e2024 !important; border-radius: 10px !important; padding: 10px 16px !important; }
+[data-testid="stExpander"] summary:hover                      { background: #252830 !important; }
+[data-testid="stExpander"] summary p                          { color: #f0eeea !important; font-weight: 600 !important; font-size: 13px !important; }
+[data-testid="stExpander"] summary svg                        { fill: #c8f04a !important; }
+[data-testid="stExpanderDetails"]                             { background: #161719 !important; }
+[data-testid="stExpanderDetails"] *                           { background-color: transparent; }
+
+/* ── Alerts / info boxes ── */
+[data-testid="stAlert"]                       { border-radius: 8px !important; }
+[data-testid="stAlert"][data-baseweb="notification"] { border-radius: 8px !important; }
+.stSuccess                                    { background: rgba(200,240,74,0.08) !important; border: 1px solid rgba(200,240,74,0.25) !important; color: #c8f04a !important; }
+.stWarning                                    { background: rgba(240,168,50,0.08) !important; border: 1px solid rgba(240,168,50,0.25) !important; }
+.stError                                      { background: rgba(232,92,62,0.08) !important; border: 1px solid rgba(232,92,62,0.25) !important; }
+.stInfo                                       { background: rgba(91,158,245,0.08) !important; border: 1px solid rgba(91,158,245,0.25) !important; }
+
+/* ── Divider ── */
 hr { border-color: rgba(255,255,255,0.07) !important; }
+
+/* ── Typography ── */
+h1, h2, h3, h4 { color: #f0eeea !important; font-family: 'Manrope', sans-serif !important; }
 .mono  { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #c8f04a; }
 .muted { color: #7a7975; font-size: 12px; }
 
-/* ── Dataframe / table — dark theme ── */
+/* ── Dataframe wrapper ── */
 [data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
 iframe { color-scheme: dark; }
-
-/* ── Expander — dark background, visible header ── */
-[data-testid="stExpander"] {
-    background: #161719 !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
-    border-radius: 10px !important;
-}
-[data-testid="stExpander"] summary {
-    background: #1e2024 !important;
-    border-radius: 10px !important;
-    padding: 12px 16px !important;
-    color: #f0eeea !important;
-    font-weight: 600 !important;
-    font-size: 13px !important;
-}
-[data-testid="stExpander"] summary:hover {
-    background: #2a2d32 !important;
-}
-[data-testid="stExpander"] summary p {
-    color: #f0eeea !important;
-    font-weight: 600 !important;
-}
-[data-testid="stExpander"] > div[data-testid="stExpanderDetails"] {
-    background: #161719 !important;
-}
-/* Expander arrow */
-[data-testid="stExpander"] summary svg { fill: #c8f04a !important; }
 </style>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True), unsafe_allow_html=True)
 
 # ── DATA ─────────────────────────────────────────────────────
 DEALERS = {
