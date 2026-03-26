@@ -52,6 +52,37 @@ h1, h2, h3 { color: #f0eeea !important; font-family: 'Manrope', sans-serif !impo
 hr { border-color: rgba(255,255,255,0.07) !important; }
 .mono  { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #c8f04a; }
 .muted { color: #7a7975; font-size: 12px; }
+
+/* ── Dataframe / table — dark theme ── */
+[data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
+iframe { color-scheme: dark; }
+
+/* ── Expander — dark background, visible header ── */
+[data-testid="stExpander"] {
+    background: #161719 !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-radius: 10px !important;
+}
+[data-testid="stExpander"] summary {
+    background: #1e2024 !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    color: #f0eeea !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+[data-testid="stExpander"] summary:hover {
+    background: #2a2d32 !important;
+}
+[data-testid="stExpander"] summary p {
+    color: #f0eeea !important;
+    font-weight: 600 !important;
+}
+[data-testid="stExpander"] > div[data-testid="stExpanderDetails"] {
+    background: #161719 !important;
+}
+/* Expander arrow */
+[data-testid="stExpander"] summary svg { fill: #c8f04a !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -76,13 +107,35 @@ DEFAULT_ASSUMPTIONS = {
 }
 
 if "assumptions"    not in st.session_state: st.session_state.assumptions    = DEFAULT_ASSUMPTIONS.copy()
+
+# ── DARK TABLE RENDERER (avoids white iframe flash) ──────────
+def dark_table(df):
+    """Render a DataFrame as a styled dark HTML table."""
+    rows_html = ""
+    # Header
+    rows_html += "<tr>" + "".join(f'<th>{c}</th>' for c in df.columns) + "</tr>"
+    # Rows
+    for _, row in df.iterrows():
+        rows_html += "<tr>" + "".join(f'<td>{v}</td>' for v in row) + "</tr>"
+    return st.markdown(f"""
+<div style="overflow-x:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.08);margin-bottom:8px">
+<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:'Manrope',sans-serif">
+  <thead style="background:#1e2024;color:#7a7975;font-size:11px;text-transform:uppercase;letter-spacing:.06em">
+    {rows_html.split('</tr>')[0]}</tr>
+  </thead>
+  <tbody>
+    {''.join('<tr style="border-top:1px solid rgba(255,255,255,0.06)">' + r + '</tr>'
+             for r in ('<tr>' + rows_html.split('<tr>',1)[1]).split('<tr>')[1:])}
+  </tbody>
+</table>
+</div>""", unsafe_allow_html=True)
 if "stock_override" not in st.session_state: st.session_state.stock_override = {}
 
 # ── CALC ─────────────────────────────────────────────────────
 def calc_norms(rev, pallets, area, gross_pct, a):
     gross       = rev * gross_pct
     mgr_count   = max(1, math.ceil(rev / a["rev_per_mgr"]))
-    log_count   = max(1, math.floor(pallets / 5))
+    log_count   = max(1, math.ceil(pallets / 2000))
     personnel   = mgr_count*a["sal_mgr"] + a["sal_acc"] + log_count*a["sal_log"] + a["sal_off"] + a["sal_dir"]
     tax_vat     = gross     * a["vat"]
     tax_profit  = gross     * a["profit_tax"]
@@ -268,7 +321,7 @@ with tab1:
 
     st.markdown("---")
     st.markdown("**Структура затрат vs. норматив**")
-    st.dataframe(pd.DataFrame([
+    dark_table(pd.DataFrame([
         {"Категория": "Персонал",         "$/мес": fmt(n["personnel"]), "% выручки": fmtpct(n["personnel"]/d["rev"]), "Ориентир": "0.8–1.4%", "Статус": "✓" if n["personnel"]/d["rev"] <= 0.014 else "⚠"},
         {"Категория": "Налоги",           "$/мес": fmt(n["taxes"]),     "% выручки": fmtpct(n["taxes"]/d["rev"]),     "Ориентир": "0.4–0.8%", "Статус": "✓" if n["taxes"]/d["rev"]     <= 0.008 else "⚠"},
         {"Категория": "Склад/логистика",  "$/мес": fmt(n["warehouse"]), "% выручки": fmtpct(n["warehouse"]/d["rev"]), "Ориентир": "0.5–0.9%", "Статус": "✓" if n["warehouse"]/d["rev"] <= 0.009 else "⚠"},
@@ -304,7 +357,7 @@ with tab2:
         ]),
     ]:
         with st.expander(f"{title}  —  {fmt(total)}/мес  ({fmtpct(total/d['rev'])} выручки)", expanded=True):
-            st.dataframe(pd.DataFrame(
+            dark_table(pd.DataFrame(
                 [(lb, f"${v:,.0f}", f"{v/d['rev']*100:.3f}%") for lb, v in rows] +
                 [("── Итого", f"${total:,.0f}", f"{total/d['rev']*100:.3f}%")],
                 columns=["Статья", "$/мес", "% выручки"]
@@ -364,7 +417,7 @@ with tab3:
 
     with col_up2:
         st.markdown("**Требования к файлу**")
-        st.dataframe(pd.DataFrame([
+        dark_table(pd.DataFrame([
             {"Колонка": "Артикул",        "Тип": "текст", "Пример": "FKN90014BEL-IN", "Обязательно": "✓ Да"},
             {"Колонка": "Остаток (шт)",   "Тип": "число", "Пример": "42",             "Обязательно": "✓ Да"},
             {"Колонка": "Шт/поддон",      "Тип": "число", "Пример": "1",              "Обязательно": "✓ Да"},
@@ -408,7 +461,7 @@ with tab4:
         st.metric("Средний % расходов", fmtpct(avg_pct))
 
     st.markdown("---")
-    st.dataframe(df_all, use_container_width=True, hide_index=True)
+    dark_table(df_all)
     st.download_button(
         "⬇ Экспорт всех дилеров (CSV)",
         data=df_to_csv(df_all),
