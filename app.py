@@ -91,7 +91,7 @@ h1, h2, h3, h4 { color: #f0eeea !important; font-family: 'Manrope', sans-serif !
 [data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
 iframe { color-scheme: dark; }
 </style>
-""", unsafe_allow_html=True), unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # ── DATA ─────────────────────────────────────────────────────
 DEALERS = {
